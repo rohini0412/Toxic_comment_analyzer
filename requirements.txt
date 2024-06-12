@@ -1,0 +1,7 @@
+streamlit
+scikit-learn
+lightgbm
+joblib
+numpy
+pandas
+nltk
