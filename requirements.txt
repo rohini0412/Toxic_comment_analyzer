@@ -1,3 +1,4 @@
+python-dotenv>=0.15.0 ; python_version >= "3.5" and python_version < "4.0"
 streamlit
 scikit-learn
 lightgbm
@@ -8,3 +9,4 @@ nltk
 gradio
 moviepy
 speech_recognition==3.8.1
+
