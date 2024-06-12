@@ -8,6 +8,11 @@ import string
 import nltk
 import moviepy.editor as mp
 import speech_recognition as sr
+import requests
+import time
+from moviepy.editor import VideoFileClip
+import os
+
 
 # Download necessary NLTK resources
 nltk.download('punkt')
@@ -53,23 +58,61 @@ def classify_comment(comment_text):
     return is_toxic, sorted_results
 
 # Function to extract audio from video and transcribe
+
 def extract_and_transcribe(video_path):
+    # Hardcoded API key (Replace with your actual API key)
+    api_key = '02KU-AB78tq0l7ztzFfcR_craAUfZR1gEkzSa7C8KZAvpBuMKP7iSk5FOvtYbZU9y6DYAnohqWMI52f_GVt4OPMh4N-g8'
 
     # Extract audio from video
-    video = mp.VideoFileClip(video_path)
+    video = VideoFileClip(video_path)
     audio = video.audio
 
     # Save the audio as a WAV file
     audio_path = "temp_audio.wav"
     audio.write_audiofile(audio_path)
 
-    # Transcribe the audio
-    recognizer = sr.Recognizer()
-    with sr.AudioFile(audio_path) as source:
-        audio_data = recognizer.record(source)
-        transcription = recognizer.recognize_google(audio_data)
+    # Step 1: Upload the audio file to Rev.ai
+    upload_url = 'https://api.rev.ai/speechtotext/v1/jobs'
+    headers = {
+        'Authorization': f'Bearer {api_key}'
+    }
+    files = {
+        'media': open(audio_path, 'rb')
+    }
+    data = {
+        'metadata': 'Transcription request'
+    }
+    response = requests.post(upload_url, headers=headers, files=files, data=data)
 
-    return transcription
+    if response.status_code != 200:
+        raise Exception(f"Failed to upload file: {response.text}")
+
+    job_id = response.json().get('id')
+
+    # Step 2: Poll the job status until it's completed
+    status_url = f'https://api.rev.ai/speechtotext/v1/jobs/{job_id}'
+    while True:
+        response = requests.get(status_url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Failed to get job status: {response.text}")
+        status = response.json().get('status')
+        if status == 'transcribed':
+            break
+        time.sleep(10)
+
+    # Step 3: Retrieve the transcription
+    result_url = f'https://api.rev.ai/speechtotext/v1/jobs/{job_id}/transcript'
+    response = requests.get(result_url, headers=headers)
+    if response.status_code != 200:
+        raise Exception(f"Failed to get transcription: {response.text}")
+
+    transcription = response.json().get('monologues')[0].get('elements')
+    transcription_text = " ".join([word['value'] for word in transcription])
+
+    # Clean up the temporary audio file
+    os.remove(audio_path)
+
+    return transcription_text
 
 # Function to classify toxicity for video transcription
 def classify_video(video_file):
