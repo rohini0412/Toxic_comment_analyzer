@@ -7,3 +7,4 @@ pandas
 nltk
 gradio
 moviepy
+speech_recognition 
