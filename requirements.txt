@@ -7,4 +7,4 @@ pandas
 nltk
 gradio
 moviepy
-speech_recognition 
+speech_recognition==3.8.1
