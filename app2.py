@@ -7,7 +7,7 @@ from nltk.stem import WordNetLemmatizer
 import string
 import nltk
 import moviepy.editor as mp
-import speech_recognition as sr
+
 import requests
 import time
 from moviepy.editor import VideoFileClip
