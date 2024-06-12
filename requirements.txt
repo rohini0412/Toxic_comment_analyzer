@@ -5,3 +5,5 @@ joblib
 numpy
 pandas
 nltk
+gradio
+moviepy
