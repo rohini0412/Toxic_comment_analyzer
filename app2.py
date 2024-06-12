@@ -177,4 +177,6 @@ with gr.Blocks() as demo:
 
         classify_button.click(video_ui, inputs=video_input, outputs=[transcription_text, result_text, result_details])
 
-demo.launch()
+port = int(os.environ.get('PORT', 7860))
+
+demo.launch(server_name="0.0.0.0", server_port=port)
